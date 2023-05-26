@@ -6,6 +6,10 @@
     "start": "next start"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.1.0",
+    "@fortawesome/fontawesome-svg-core": "^6.4.0",
+    "antd": "^5.5.1",
+    "axios": "^1.4.0",
     "next": "latest",
     "react": "18.2.0",
     "react-dom": "18.2.0"

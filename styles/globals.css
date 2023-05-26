@@ -1,3 +1,9 @@
+:root {
+  --md-dark-color: #1d1d1d;
+  --dark-color: #171717;
+  --light-dark-color: #292929;
+  --yellow-color: #d4aa11;
+}
 html,
 body {
   padding: 0;
@@ -13,15 +19,21 @@ a {
 
 * {
   box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
-
+a {
+  text-decoration: none;
+}
 img {
   max-width: 100%;
+  display: block;
   height: auto;
 }
 
 h1,
 h2,
+h3,
 p,
 ul {
   margin: 0;

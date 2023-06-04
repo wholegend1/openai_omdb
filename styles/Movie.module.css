@@ -169,6 +169,10 @@
   -ms-flex-pack: center;
   justify-content: center;
   padding: 1rem;
+
+}
+.movieInfo .subtitle {
+  padding: 5px;
 }
 .movieInfo .year {
   font-weight: 500;
@@ -274,7 +278,7 @@
   .movieInfo .plot {
     margin-left: 0;
   }
-  .movie-info .writer {
+  .movieInfo .writer {
     padding-left: 0;
     margin-left: 0;
   }

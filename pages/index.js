@@ -1,7 +1,6 @@
-import Head from "next/head";
-import styles from "../styles/Home.module.css";
-import MoviePage from "./moviePage";
+
+import Movie from "./Movie";
 
 export default function Home() {
-  return <MoviePage />;
+  return <Movie />;
 }

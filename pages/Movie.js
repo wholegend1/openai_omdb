@@ -31,19 +31,7 @@ const footerStyle = {
   left: 0,
   right: 0,
 };
-const generateReview = async (movieTitle, callback) => {
-  try {
-    const response = await axios.post("/api/generateReview", {
-      movieTitle: movieTitle,
-    });
-    console.log(response);
-    const generatedText = response.data.generatedReview;
-    callback(null, generatedText);
-  } catch (error) {
-    callback(error, null);
-    console.error("Failed to generate review:", error);
-  }
-};
+
 const findMovies = async (searchTerm ,callback) => {
   let search = searchTerm.toString().trim();
   if (search.length > 0) {

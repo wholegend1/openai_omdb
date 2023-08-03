@@ -1,7 +1,7 @@
 // MovieItem.js
 import { Image } from "antd";
 import styles from "../styles/Movie.module.css";
-import Link from "next/link"; // Import the Link component from Next.js
+import Link from "next/link"; 
 
 const MovieItem = ({ movie }) => {
   if (movie.Poster === "N/A") {

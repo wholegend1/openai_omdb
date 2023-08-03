@@ -1,0 +1,13 @@
+
+
+/* MovieRecommendInfo.module.css */
+
+.recommendContainer {
+    /* 定義 recommendContainer 的樣式 */
+    display: flex;
+    gap:10px;
+}
+
+.recommendItem img {
+    max-height:400px
+}

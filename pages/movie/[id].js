@@ -1,9 +1,9 @@
 // pages/movie/[id].js
 import { useRouter } from "next/router";
-import axios from "axios";
 import { useState, useEffect } from "react";
 import MovieDetail from "../../components/MovieDetail";
-
+import { getMovieDetail } from "../../utils/omdb";
+import { Button } from "antd";
 const MovieId = () => {
   const router = useRouter();
   const { id } = router.query; // Get the movie id from the router query
@@ -11,28 +11,24 @@ const MovieId = () => {
   const [movieDetail, setMovieDetail] = useState(null);
 
   useEffect(() => {
-    const fetchMovieDetail = async () => {
-      try {
-        const response = await axios.get(
-          `/api/movies?imdbID=${encodeURIComponent(id)}`
-        );
-        setMovieDetail(response.data[0]);
-      } catch (error) {
-        console.error("Failed to fetch movie detail:", error);
-      }
-    };
-
     if (id) {
-      fetchMovieDetail();
+      getMovieDetail(id).then((res) => setMovieDetail(res[0]));
     }
   }, [id]);
+
+  const handleGoBack = () => {
+    router.back(); // Function to navigate back to the previous page
+  };
 
   return (
     <div>
       {movieDetail ? (
-        <MovieDetail movieDetail={movieDetail} />
+        <MovieDetail movieDetail={movieDetail} handleGoBack={handleGoBack} />
       ) : (
-        <p>Loading...</p>
+        <div>
+          <Button onClick={handleGoBack}>Back</Button>
+          <p>Loading...</p>
+        </div>
       )}
     </div>
   );

@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Layout, Space, Input, Image, Button, Tooltip } from "antd";
-import { VideoCameraTwoTone, TrophyOutlined } from "@ant-design/icons";
+import { Layout,Input,Image } from "antd";
+import { VideoCameraTwoTone } from "@ant-design/icons";
 import styles from "../styles/Movie.module.css";
-import axios from "axios";
-import MovieItem  from "../components/MovieItem";
+import { searchMovies } from "../utils/omdb";
 const { Header, Footer, Content } = Layout;
+import MovieItem from "../components/MovieItem";
+import RecommendInfo from "../components/MovieRecommendInfo";
 
 const headerStyle = {
   textAlign: "center",
@@ -30,65 +31,34 @@ const footerStyle = {
   left: 0,
   right: 0,
 };
+const generateReview = async (movieTitle, callback) => {
+  try {
+    const response = await axios.post("/api/generateReview", {
+      movieTitle: movieTitle,
+    });
+    console.log(response);
+    const generatedText = response.data.generatedReview;
+    callback(null, generatedText);
+  } catch (error) {
+    callback(error, null);
+    console.error("Failed to generate review:", error);
+  }
+};
+const findMovies = async (searchTerm ,callback) => {
+  let search = searchTerm.toString().trim();
+  if (search.length > 0) {
+    console.log("search", search);
+    const moviesInfo = await searchMovies(search);
+    callback(null,{searchListVisible:true, moviesInfo:moviesInfo})
+  } else {
+    callback(null, { searchListVisible: false, moviesInfo: [] });
+  }
+};
 
 const Movie = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchListVisible, setSearchListVisible] = useState(false);
   const [moviesInfo, setMoviesInfo] = useState([]);
-
-  const generateReview = async (movieTitle) => {
-    try {
-      const response = await axios.post("/api/generateReview", {
-        movieTitle: movieTitle,
-      });
-      console.log(response);
-      const generatedText = response.data.generatedReview;
-      setGeneratedReview(generatedText);
-    } catch (error) {
-      console.error("Failed to generate review:", error);
-    }
-  };
-  const findMovies = async () => {
-    const search = searchTerm.trim();
-    if (search.length > 0) {
-      setSearchListVisible(true);
-      const moviesInfo = await searchMoviesAPI(search);
-      setMoviesInfo(moviesInfo);
-    } else {
-      setSearchListVisible(false);
-    }
-  };
-
-  const searchMoviesAPI = async (searchTerm) => {
-    const response = await fetch(
-      `/api/movies?searchTerm=${encodeURIComponent(searchTerm)}`
-    );
-    const data = await response.json();
-    return data;
-  };
-
-  const displayMovies = () => {
-    return moviesInfo.map((movie) => (
-      <MovieItem key={movie.imdbID} movie={movie} findMovie={findMovie} />
-    ));
-  };
-
-  const findMovie = async (imdbID) => {
-    const movieDetail = await getMovieDetailAPI(imdbID);
-    setMovieDetail(movieDetail);
-    setSelectedMovie(true);
-    setSearchListVisible(false);
-    setSearchTerm("");
-    console.log(searchTerm);
-  };
-
-  const getMovieDetailAPI = async (imdbID) => {
-    const response = await fetch(
-      `/api/movies?imdbID=${encodeURIComponent(imdbID)}`
-    );
-    const data = await response.json();
-    return data;
-  };
 
   return (
     <div className={styles.wrapper}>
@@ -113,7 +83,18 @@ const Movie = () => {
               className={styles.formControl}
               id="movie-search-box"
               prefix={<VideoCameraTwoTone />}
-              onKeyUp={findMovies}
+              onKeyUp={(e) => {
+                findMovies(e.target.value, (error, result) => {
+                  if (!error) {
+                    setSearchListVisible(result.searchListVisible);
+                    setMoviesInfo(result.moviesInfo);
+                  } else {
+                    console.error(error);
+                    setSearchListVisible(false);
+                    setMoviesInfo(result.moviesInfo);
+                  }
+                });
+              }}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -123,8 +104,11 @@ const Movie = () => {
               }`}
               id="search-list"
             >
-              {displayMovies()}
+              <MoviesInfo moviesInfo={moviesInfo} />
             </div>
+          </div>
+          <div className={styles.recommendElement}>
+            <RecommendInfo />
           </div>
         </div>
       </Content>
@@ -132,5 +116,14 @@ const Movie = () => {
     </div>
   );
 };
+
+const MoviesInfo = ({ moviesInfo }) => {
+  return moviesInfo.map((movie) => (
+    <MovieItem key={movie.imdbID} movie={movie}  />
+  ));
+};
+
+
+
 
 export default Movie;

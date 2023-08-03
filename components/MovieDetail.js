@@ -5,6 +5,9 @@ import styles from "../styles/MovieDetail.module.css";
 import { useRouter } from "next/router";
 
 const MovieDetail = ({ movieDetail }) => {
+  if (movieDetail.Poster === "N/A") {
+    movieDetail.Poster = "/image-not-found-icon.svg";
+  }
   const {
     Poster,
     Title,
@@ -20,14 +23,6 @@ const MovieDetail = ({ movieDetail }) => {
   } = movieDetail;
 
   const router = useRouter(); // Get the router object
-
-  const handleGoBack = () => {
-    router.back(); // Function to navigate back to the previous page
-    };
-
-  if (Poster === "N/A") {
-    movieDetail.Poster = "/image-not-found-icon.svg";
-  }
 
   return (
     <>

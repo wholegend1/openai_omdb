@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
-import { recommendData } from "../recommendData";
-import { getMoviePoster } from "../utils/omdb";
 import { Image } from "antd";
 import  styles  from "../styles/MovieRecommendInfo.module.css";
 import Link from "next/link"; 
 
-const RecommendInfo = ({  }) => {
+const RecommendInfo = ({ recommendData }) => {
   const [recommend, setRecommend] = useState([]);
 
   useEffect(() => {
@@ -13,10 +11,22 @@ const RecommendInfo = ({  }) => {
       const movieData = await Promise.all(
         recommendData.map(async (movie) => {
           let id = movie.omdbid;
-          let poster = await getMoviePoster(id);
-          return { id, poster };
+          let posterResponse = await fetch(
+            `/api/movie?imdbID=${id}&type=poster`
+          )
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+              return response.json();
+            })
+            .catch((error) => {
+              console.error("Error fetching and parsing JSON:", error);
+            });
+          return { id: id, poster: posterResponse };
         })
       );
+      console.log("movieRecommend", movieData);
       setRecommend(movieData);
     };
 

@@ -1,6 +1,6 @@
 
-import Movie from "./Movie";
+import HomePage from "./HomePage";
 
 export default function Home() {
-  return <Movie />;
+  return <HomePage />;
 }

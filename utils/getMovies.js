@@ -1,7 +1,5 @@
-const API_KEY = "5454f4b0";
-
-export async function searchMovies(searchTerm) {
-  const url = `https://www.omdbapi.com/?s=${searchTerm}&apikey=${API_KEY}`;
+export async function getMovieInfo(searchTerm, key) {
+  const url = `https://www.omdbapi.com/?s=${searchTerm}&apikey=${key}`;
   const response = await fetch(url);
   const data = await response.json();
 
@@ -12,8 +10,8 @@ export async function searchMovies(searchTerm) {
   }
 }
 
-export async function getMovieDetail(imdbID) {
-  const url = `https://www.omdbapi.com/?i=${imdbID}&apikey=${API_KEY}`;
+export async function getMovieDetail(imdbID, key) {
+  const url = `https://www.omdbapi.com/?i=${imdbID}&apikey=${key}`;
   const response = await fetch(url);
   const data = await response.json();
 
@@ -24,8 +22,8 @@ export async function getMovieDetail(imdbID) {
   }
 }
 
-export async function getMoviePoster(imdbID) {
-  const url = `https://www.omdbapi.com/?i=${imdbID}&apikey=${API_KEY}`;
+export async function getMoviePoster(imdbID, key) {
+  const url = `https://www.omdbapi.com/?i=${imdbID}&apikey=${key}`;
   const response = await fetch(url);
   const data = await response.json();
   if (data.Response === "True") {

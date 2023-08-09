@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Layout,Input,Image } from "antd";
 import { VideoCameraTwoTone } from "@ant-design/icons";
 import styles from "../styles/Movie.module.css";
-import { searchMovies } from "../utils/omdb";
 const { Header, Footer, Content } = Layout;
 import MovieItem from "../components/MovieItem";
 import RecommendInfo from "../components/MovieRecommendInfo";
+import { recommendData } from "../recommendData";
 
 const headerStyle = {
   textAlign: "center",
@@ -32,18 +32,7 @@ const footerStyle = {
   right: 0,
 };
 
-const findMovies = async (searchTerm ,callback) => {
-  let search = searchTerm.toString().trim();
-  if (search.length > 0) {
-    console.log("search", search);
-    const moviesInfo = await searchMovies(search);
-    callback(null,{searchListVisible:true, moviesInfo:moviesInfo})
-  } else {
-    callback(null, { searchListVisible: false, moviesInfo: [] });
-  }
-};
-
-const Movie = () => {
+const HomePage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchListVisible, setSearchListVisible] = useState(false);
   const [moviesInfo, setMoviesInfo] = useState([]);
@@ -96,7 +85,7 @@ const Movie = () => {
             </div>
           </div>
           <div className={styles.recommendElement}>
-            <RecommendInfo />
+            <RecommendInfo key='recommendData' recommendData={recommendData} />
           </div>
         </div>
       </Content>
@@ -111,7 +100,18 @@ const MoviesInfo = ({ moviesInfo }) => {
   ));
 };
 
+const findMovies = async (searchTerm, callback) => {
+  let search = searchTerm.toString().trim();
+  if (search.length > 0) {
+    console.log("search", search);
+    const response = await fetch(`/api/movie?searchTerm=${searchTerm}`);
+    const moviesInfo = await response.json();
+    console.log("moviesInfo", moviesInfo);
+    callback(null, { searchListVisible: true, moviesInfo: moviesInfo });
+  } else {
+    callback(null, { searchListVisible: false, moviesInfo: [] });
+  }
+};
 
 
-
-export default Movie;
+export default HomePage;

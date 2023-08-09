@@ -2,7 +2,6 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import MovieDetail from "../../components/MovieDetail";
-import { getMovieDetail } from "../../utils/omdb";
 import { Button } from "antd";
 const MovieId = () => {
   const router = useRouter();
@@ -12,7 +11,13 @@ const MovieId = () => {
 
   useEffect(() => {
     if (id) {
-      getMovieDetail(id).then((res) => setMovieDetail(res[0]));
+      fetchMovieDetail(id)
+        .then((res) => {
+          setMovieDetail(res);
+        })
+        .catch((error) => {
+          console.error("Error fetching movie detail:", error);
+        });
     }
   }, [id]);
 
@@ -33,5 +38,22 @@ const MovieId = () => {
     </div>
   );
 };
+
+const fetchMovieDetail = async (id) => {
+ try {
+   const movieDetailResponse = await fetch(
+     `/api/movie?imdbID=${id}&type=detail`
+   );
+   if (!movieDetailResponse.ok) {
+     throw new Error("Network response was not ok");
+   }
+   const movieDetail = await movieDetailResponse.json();
+   return movieDetail[0];
+ } catch (error) {
+   console.error("Error fetching and parsing JSON:", error);
+   return {}; 
+ }
+};
+
 
 export default MovieId;

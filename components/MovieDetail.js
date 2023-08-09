@@ -1,7 +1,7 @@
 // MovieDetail.js
 import { useState } from "react";
 import { Image, Button, Spin } from "antd";
-import { TrophyOutlined } from "@ant-design/icons";
+import { TrophyOutlined, SwapOutlined } from "@ant-design/icons";
 import styles from "../styles/MovieDetail.module.css";
 import axios from "axios";
 
@@ -25,7 +25,7 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
     isGenerated: false,
     isLoading: false,
   });
-
+  const [showGeneratedReview, setShowGeneratedReview] = useState(false);
   if (movieDetail.Poster === "N/A") {
     movieDetail.Poster = "/image-not-found-icon.svg";
   }
@@ -53,13 +53,16 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
           isGenerated: true,
           isLoading: false,
         });
+        setShowGeneratedReview(true);
       } else {
         console.log("請稍後在試");
         setReviewData({ ...reviewData, isLoading: false });
       }
     });
   };
-
+  const handleChange = (show) => {
+    setShowGeneratedReview(!show);
+  }
   return (
     <>
       <div className={styles.resultWrapper}>
@@ -71,7 +74,7 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
             shape="round"
             size="large"
             onClick={handleGoBack}
-            hoverable
+            hoverable={true}
           >
             Back
           </Button>
@@ -86,49 +89,61 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
                 alt="movie poster"
               />
             </div>
-            {/* 條件渲染，根據 reviewGenerated 狀態來決定渲染評論內容或影片資訊 */}
-            {reviewData.isGenerated ? (
-              <div className={styles.movieReview}>
-                {reviewData.generatedText.map((text, index) => (
-                  <p key={index}>{text}</p>
-                ))}
-              </div>
-            ) : (
-              <div className={styles.movieInfo}>
-                <h3 className={styles.movieTitle}>{Title}</h3>
-                <ul className={styles.movieMiscInfo}>
-                  <li className={styles.year}>{Year}</li>
-                  <li className={styles.rated}>{Rated}</li>
-                  <li className={styles.released}>{Released}</li>
-                </ul>
-                <p className={styles.genre}>
-                  <b>Genre: </b>
-                  {Genre}
-                </p>
-                <p className={styles.writer}>
-                  <b>Writer: </b>
-                  {Writer}
-                </p>
-                <p className={styles.actors}>
-                  <b>Actors: </b>
-                  {Actors}
-                </p>
-                <p className={styles.plot}>
-                  <b>Plot:</b>
-                  {Plot}
-                </p>
-                <p className={styles.language}>
-                  <b>Language: </b>
-                  {Language}
-                </p>
-                <p className={styles.awards}>
-                  <b className={styles.subtitle}>
-                    <TrophyOutlined />
-                  </b>
-                  {Awards}
-                </p>
-              </div>
-            )}
+            <div className={styles.textContainer}>
+              {reviewData.isGenerated ? (
+                <Button onClick={() => handleChange(showGeneratedReview)}>
+                  <SwapOutlined />
+                </Button>
+              ) : (
+                <div></div>
+              )}
+
+              {/* 條件渲染，根據 reviewGenerated 狀態來決定渲染評論內容或影片資訊 */}
+              {showGeneratedReview ? (
+                <div className={styles.movieReviewContainer}>
+                  <div className={styles.movieReview}>
+                    {reviewData.generatedText.map((text, index) => (
+                      <p key={index}>{text}</p>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.movieInfo}>
+                  <h3 className={styles.movieTitle}>{Title}</h3>
+                  <ul className={styles.movieMiscInfo}>
+                    <li className={styles.year}>{Year}</li>
+                    <li className={styles.rated}>{Rated}</li>
+                    <li className={styles.released}>{Released}</li>
+                  </ul>
+                  <p className={styles.genre}>
+                    <b>Genre: </b>
+                    {Genre}
+                  </p>
+                  <p className={styles.writer}>
+                    <b>Writer: </b>
+                    {Writer}
+                  </p>
+                  <p className={styles.actors}>
+                    <b>Actors: </b>
+                    {Actors}
+                  </p>
+                  <p className={styles.plot}>
+                    <b>Plot:</b>
+                    {Plot}
+                  </p>
+                  <p className={styles.language}>
+                    <b>Language: </b>
+                    {Language}
+                  </p>
+                  <p className={styles.awards}>
+                    <b className={styles.subtitle}>
+                      <TrophyOutlined />
+                    </b>
+                    {Awards}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <footer className={styles.resultFooter}>

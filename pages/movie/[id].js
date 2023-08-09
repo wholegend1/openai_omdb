@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import MovieDetail from "../../components/MovieDetail";
 import { Button } from "antd";
-const MovieDetail = () => {
+const Movie = () => {
   const router = useRouter();
   const { id } = router.query; // Get the movie id from the router query
 
@@ -56,4 +56,4 @@ const fetchMovieDetail = async (id) => {
 };
 
 
-export default MovieDetail;
+export default Movie;

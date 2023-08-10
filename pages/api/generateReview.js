@@ -1,18 +1,42 @@
+const { Configuration, OpenAIApi } = require("openai");
 export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
   if (req.method === "POST") {
-    const { Configuration, OpenAIApi } = require("openai");
-
+    if(!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: "Missing OPENAI_API_KEY" });
+    }
     const configuration = new Configuration({
       apiKey: process.env.OPENAI_API_KEY,
     });
     const openai = new OpenAIApi(configuration);
-    const prompt = req.body.movieTitle || "";
-    if (prompt.trim().length === 0) {
+    const {
+      Title,
+      Year,
+      Rated,
+      Released,
+      Genre,
+      Writer,
+      Actors,
+      Plot,
+      Language,
+      Awards,
+    } = req.body.movieDetail || "";
+    const prompt = `this is movieInfo {
+      "Title": "${Title}",
+      "Year": "${Year}",
+      "Rated": "${Rated}",
+      "Released": "${Released}",
+      "Genre": "${Genre}",
+      "Writer": "${Writer}",
+      "Actors": "${Actors}",
+      "Plot": "${Plot}",
+      "Language": "${Language}",
+      "Awards": "${Awards}
+    `;
+    const maxTokens = 256;
+    if (Title.trim().length === 0) {
       res.status(400).json({
-        error: {
-          message: "Please enter a valid prompt",
-        },
+        error: "Please enter a valid Title",
       });
       return;
     }
@@ -20,30 +44,65 @@ export default async function handler(req, res) {
       const messages = [
         {
           role: "system",
-          content:
-            "You are an expert movie reviewer. Please provide an introduction and review for the movie: " +
-            prompt +
-            ". Imagine you are writing for a movie magazine and you want to give readers a sense of what the movie is about and your opinion on it.",
+          content: "You are an expert movie reviewer",
+        },
+        {
+          role: "user",
+          content: `I will give you movie info. Provide a brief introduction and review in following JSON format, without any output:\n
+                     {"title":"",introduction:"",review:""}`,
         },
         {
           role: "user",
           content: prompt,
         },
       ];
-      const response = await openai.createChatCompletion({
+      let response = await openai.createChatCompletion({
         model: "gpt-3.5-turbo",
         messages: messages,
         temperature: 0.7,
-        max_tokens: 256,
+        max_tokens: maxTokens,
         top_p: 1,
         frequency_penalty: 0,
         presence_penalty: 0,
       });
-      console.log("response", response);
-      console.log("Generated review:", response.data);
-      const generatedReview = response.data.choices[0]?.message?.content;
-      const parts = generatedReview.split("\n\n");
-      res.status(200).json({ parts });
+      let generatedReview = response.data.choices[0]?.message?.content;
+      while (
+        response.data.usage.completion_tokens >= maxTokens &&
+        !generatedReview.includes("}")
+      ) {
+        // 提取助理的回應
+        const assistantResponse = response.data.choices[0]?.message?.content;
+
+        // 傳遞助理的回應作為新的 prompt 並重新生成
+        let newResponse = await openai.createChatCompletion({
+          model: "gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content: "You are an expert movie reviewer",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+            {
+              role: "assistant",
+              content: assistantResponse,
+            },
+          ],
+          temperature: 0.7,
+          max_tokens: 256,
+          top_p: 1,
+          frequency_penalty: 0,
+          presence_penalty: 0,
+        });
+        console.log(newResponse.data.choices[0]?.message?.content);
+        generatedReview += newResponse.data.choices[0]?.message?.content;
+      }
+      console.log("Generated review:", generatedReview);
+      const { title, introduction, review } = JSON.parse(generatedReview);
+      // const parts = generatedReview.split("\n\n");
+      res.status(200).json({ title, introduction, review });
     } catch (error) {
       console.error("Failed to generate review:", error);
       res.status(500).json({ error: "Failed to generate review" });

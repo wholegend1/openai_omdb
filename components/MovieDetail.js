@@ -9,7 +9,9 @@ import axios from "axios";
 
 const MovieDetail = ({ movieDetail, handleGoBack }) => {
   const [reviewData, setReviewData] = useState({
-    generatedText: [],
+    Title:"",
+    Introduction:"",
+    Review:"",
     isGenerated: false,
     isLoading: false,
   });
@@ -34,9 +36,11 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
   const handleGenerateReview = async () => {
     setReviewData({ ...reviewData, isLoading: true });
     try {
-      const result = await generateReview(Title);
+      const result = await generateReview(movieDetail);
       setReviewData({
-        generatedText: result.generatedText,
+        Title: result.Title,
+        Introduction: result.Introduction,
+        Review: result.Review,
         isGenerated: true,
         isLoading: false,
       });
@@ -87,9 +91,14 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
               {showGeneratedReview ? (
                 <div className={styles.movieReviewContainer}>
                   <div className={styles.movieReview}>
-                    {reviewData.generatedText.map((text, index) => (
-                      <p key={index}>{text}</p>
-                    ))}
+                    <h3 className={styles.movieTitle}>{reviewData.Title}</h3>
+                    <div className={styles.reviewIntroduction}>
+                      <h3>Introduction：</h3> {reviewData.Introduction}
+                    </div>
+                    <div className={styles.reviewContent}>
+                      <h3>Review：</h3>
+                      {reviewData.Review}
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -135,7 +144,7 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
           {reviewData.isLoading ? (
             <Spin size="large" />
           ) : (
-            <Button onClick={()=>handleGenerateReview()}>
+            <Button onClick={() => handleGenerateReview()}>
               {reviewData.isGenerated
                 ? "Generate Another Review"
                 : "Generate Review"}
@@ -147,14 +156,14 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
   );
 };
 
-const generateReview = async (movieTitle) => {
+const generateReview = async (movieDetail) => {
   try {
     const response = await axios.post("/api/generateReview", {
-      movieTitle: movieTitle,
+      movieDetail: movieDetail,
     });
     console.log(response);
-    const generatedText = response.data.parts;
-    return { generatedText: generatedText };
+    const { title, introduction, review } = response.data;
+    return { Title: title, Introduction: introduction, Review: review };
   } catch (error) {
     console.error("Failed to generate review:", error);
     throw error; // 将错误重新抛出，以便在调用方处理

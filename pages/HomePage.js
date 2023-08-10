@@ -3,6 +3,7 @@ import { Layout,Input,Image } from "antd";
 import { VideoCameraTwoTone } from "@ant-design/icons";
 import styles from "../styles/Movie.module.css";
 const { Header, Footer, Content } = Layout;
+import _ from "lodash"; 
 import MovieItem from "../components/MovieItem";
 import RecommendInfo from "../components/MovieRecommendInfo";
 import { recommendData } from "../recommendData";
@@ -37,6 +38,18 @@ const HomePage = () => {
   const [searchListVisible, setSearchListVisible] = useState(false);
   const [moviesInfo, setMoviesInfo] = useState([]);
 
+  const throttledFindMovies = _.throttle((value) => {
+    findMovies(value)
+      .then((result) => {
+        setSearchListVisible(result.searchListVisible);
+        setMoviesInfo(result.moviesInfo);
+      })
+      .catch((error) => {
+        setSearchListVisible(false);
+        setMoviesInfo([]);
+      });
+  }, 3000, { trailing: false });
+
   return (
     <div className={styles.wrapper}>
       <Header style={headerStyle}>
@@ -61,15 +74,7 @@ const HomePage = () => {
               id="movie-search-box"
               prefix={<VideoCameraTwoTone />}
               onKeyUp={(e) => {
-                findMovies(e.target.value)
-                  .then((result) => {
-                    setSearchListVisible(result.searchListVisible);
-                    setMoviesInfo(result.moviesInfo);
-                  })
-                  .catch((error) => {
-                    setSearchListVisible(false);
-                    setMoviesInfo(result.moviesInfo);
-                  });
+                throttledFindMovies(e.target.value);
               }}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

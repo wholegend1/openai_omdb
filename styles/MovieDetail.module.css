@@ -71,6 +71,22 @@
     max-height: 400px;
     overflow-y: auto;
 }
+.movieReviewContainer::-webkit-scrollbar {
+    width: 12px;
+}
+
+.movieReviewContainer::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.movieReviewContainer::-webkit-scrollbar-thumb {
+    background-color: var(--yellow-color);
+    border-radius: 6px;
+}
+
+.movieReviewContainer::-webkit-scrollbar-thumb:hover {
+    background-color: #ffcc00;
+}
 /* textContainer */
 .textContainer{
     display: flex;
@@ -87,7 +103,22 @@
     max-height: 400px;
     overflow-y: auto;
 }
+.movieInfo::-webkit-scrollbar {
+    width: 12px;
+}
 
+.movieInfo::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.movieInfo::-webkit-scrollbar-thumb {
+    background-color: var(--yellow-color);
+    border-radius: 6px;
+}
+
+.movieInfo::-webkit-scrollbar-thumb:hover {
+    background-color: #ffcc00;
+}
 /* movie info  */
 .movieTitle {
     font-size: 2rem;
@@ -174,10 +205,15 @@
     gap: 5px;
     text-align: justify;
 }
-
+.movieReview .reviewIntroduction{
+    padding: 5px;
+}
+.movieReview .reviewContent {
+    padding: 5px;
+}
 @media (min-width: 1280px) {
     .movieReview {
-        padding-right: 100px;
+        padding-right: 50px;
         gap: 10px;
     }
 }

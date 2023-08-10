@@ -84,6 +84,8 @@
     text-align: left;
     color: #fff;
     padding-top: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 /* movie info  */

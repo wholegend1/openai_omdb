@@ -5,19 +5,7 @@ import { TrophyOutlined, SwapOutlined } from "@ant-design/icons";
 import styles from "../styles/MovieDetail.module.css";
 import axios from "axios";
 
-const generateReview = async (movieTitle, callback) => {
-  try {
-    const response = await axios.post("/api/generateReview", {
-      movieTitle: movieTitle,
-    });
-    console.log(response);
-    const generatedText = response.data.parts;
-    callback(null, { generatedText: generatedText });
-  } catch (error) {
-    callback(error, null);
-    console.error("Failed to generate review:", error);
-  }
-};
+
 
 const MovieDetail = ({ movieDetail, handleGoBack }) => {
   const [reviewData, setReviewData] = useState({
@@ -43,22 +31,20 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
     Awards,
   } = movieDetail;
 
-  const handleGenerateReview = () => {
+  const handleGenerateReview = async () => {
     setReviewData({ ...reviewData, isLoading: true });
-    generateReview(Title, (error, result) => {
-      if (!error) {
-        console.log(result);
-        setReviewData({
-          generatedText: result.generatedText,
-          isGenerated: true,
-          isLoading: false,
-        });
-        setShowGeneratedReview(true);
-      } else {
-        console.log("請稍後在試");
-        setReviewData({ ...reviewData, isLoading: false });
-      }
-    });
+    try {
+      const result = await generateReview(Title);
+      setReviewData({
+        generatedText: result.generatedText,
+        isGenerated: true,
+        isLoading: false,
+      });
+      setShowGeneratedReview(true);
+    } catch (error) {
+      console.log("請稍後在試");
+      setReviewData({ ...reviewData, isLoading: false });
+    }
   };
   const handleChange = (show) => {
     setShowGeneratedReview(!show);
@@ -74,7 +60,6 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
             shape="round"
             size="large"
             onClick={handleGoBack}
-            hoverable={true}
           >
             Back
           </Button>
@@ -150,7 +135,7 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
           {reviewData.isLoading ? (
             <Spin size="large" />
           ) : (
-            <Button onClick={handleGenerateReview}>
+            <Button onClick={()=>handleGenerateReview()}>
               {reviewData.isGenerated
                 ? "Generate Another Review"
                 : "Generate Review"}
@@ -162,4 +147,17 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
   );
 };
 
+const generateReview = async (movieTitle) => {
+  try {
+    const response = await axios.post("/api/generateReview", {
+      movieTitle: movieTitle,
+    });
+    console.log(response);
+    const generatedText = response.data.parts;
+    return { generatedText: generatedText };
+  } catch (error) {
+    console.error("Failed to generate review:", error);
+    throw error; // 将错误重新抛出，以便在调用方处理
+  }
+};
 export default MovieDetail;

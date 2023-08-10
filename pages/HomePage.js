@@ -61,16 +61,15 @@ const HomePage = () => {
               id="movie-search-box"
               prefix={<VideoCameraTwoTone />}
               onKeyUp={(e) => {
-                findMovies(e.target.value, (error, result) => {
-                  if (!error) {
+                findMovies(e.target.value)
+                  .then((result) => {
                     setSearchListVisible(result.searchListVisible);
                     setMoviesInfo(result.moviesInfo);
-                  } else {
-                    console.error(error);
+                  })
+                  .catch((error) => {
                     setSearchListVisible(false);
                     setMoviesInfo(result.moviesInfo);
-                  }
-                });
+                  });
               }}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -85,7 +84,7 @@ const HomePage = () => {
             </div>
           </div>
           <div className={styles.recommendElement}>
-            <RecommendInfo key='recommendData' recommendData={recommendData} />
+            <RecommendInfo recommendData={recommendData} />
           </div>
         </div>
       </Content>
@@ -100,17 +99,29 @@ const MoviesInfo = ({ moviesInfo }) => {
   ));
 };
 
-const findMovies = async (searchTerm, callback) => {
-  let search = searchTerm.toString().trim();
-  if (search.length > 0) {
-    console.log("search", search);
-    const response = await fetch(`/api/movie?searchTerm=${searchTerm}`);
-    const moviesInfo = await response.json();
-    console.log("moviesInfo", moviesInfo);
-    callback(null, { searchListVisible: true, moviesInfo: moviesInfo });
-  } else {
-    callback(null, { searchListVisible: false, moviesInfo: [] });
+const findMovies = async (searchTerm) => {
+  try {
+    let search = searchTerm.toString().trim();
+    if (search.length > 0) {
+      console.log("search", search);
+      const response = await fetch(`/api/movie?searchTerm=${searchTerm}`);
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const moviesInfo = await response.json();
+      console.log("moviesInfo", moviesInfo);
+
+      return { searchListVisible: true, moviesInfo: moviesInfo };
+    } else {
+      return { searchListVisible: false, moviesInfo: [] };
+    }
+  } catch (error) {
+    console.error("Error fetching and parsing JSON:", error);
+    throw error;
   }
+  
 };
 
 

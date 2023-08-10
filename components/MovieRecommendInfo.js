@@ -1,44 +1,23 @@
 import { useState, useEffect } from "react";
 import { Image } from "antd";
-import  styles  from "../styles/MovieRecommendInfo.module.css";
-import Link from "next/link"; 
+import styles from "../styles/MovieRecommendInfo.module.css";
+import Link from "next/link";
 
 const RecommendInfo = ({ recommendData }) => {
   const [recommend, setRecommend] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const movieData = await Promise.all(
-        recommendData.map(async (movie) => {
-          let id = movie.omdbid;
-          let posterResponse = await fetch(
-            `/api/movie?imdbID=${id}&type=poster`
-          )
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error("Network response was not ok");
-              }
-              return response.json();
-            })
-            .catch((error) => {
-              console.error("Error fetching and parsing JSON:", error);
-            });
-          return { id: id, poster: posterResponse };
-        })
-      );
-      console.log("movieRecommend", movieData);
-      setRecommend(movieData);
-    };
-
-    fetchData();
+    fetchData(recommendData).then((res) => {
+      setRecommend(res);
+    });
   }, [recommendData]);
   return (
     <>
       <h2>推薦的電影清單：</h2>
       <div className={styles.recommendContainer}>
         {recommend.map((movie) => (
-          <Link href={`/movie/${movie.id}`}>
-            <div key={movie.id} className={styles.recommendItem}>
+          <Link key={movie.id}  href={`/movie/${movie.id}`}>
+            <div className={styles.recommendItem}>
               <Image
                 src={movie.poster}
                 alt="Movie Poster"
@@ -51,6 +30,30 @@ const RecommendInfo = ({ recommendData }) => {
       </div>
     </>
   );
+};
+
+const fetchData = async (recommendData) => {
+  try {
+    const movieData = await Promise.all(
+      recommendData.map(async (movie) => {
+        let id = movie.omdbid;
+        let posterResponse = await fetch(`/api/movie?imdbID=${id}&type=poster`);
+
+        if (!posterResponse.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        let posterJson = await posterResponse.json();
+
+        return { id: id, poster: posterJson };
+      })
+    );
+
+    return movieData;
+  } catch (error) {
+    console.error("Error fetching and parsing JSON:", error);
+    return []; // Return an empty array in case of error
+  }
 };
 
 export default RecommendInfo;

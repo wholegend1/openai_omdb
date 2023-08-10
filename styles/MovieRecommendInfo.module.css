@@ -6,6 +6,7 @@
     /* 定義 recommendContainer 的樣式 */
     display: flex;
     gap:10px;
+    justify-content: space-around;
 }
 
 .recommendItem img {

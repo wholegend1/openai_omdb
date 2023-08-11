@@ -4,6 +4,7 @@ import { Image, Button, Spin } from "antd";
 import { TrophyOutlined, SwapOutlined } from "@ant-design/icons";
 import styles from "../styles/MovieDetail.module.css";
 import axios from "axios";
+import GoBackButton from "./button/GoBackButton";
 
 
 
@@ -58,15 +59,7 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
       <div className={styles.resultWrapper}>
         {/* header */}
         <header className={styles.resultHeader}>
-          <Button
-            className={styles.customButton}
-            type="primary"
-            shape="round"
-            size="large"
-            onClick={handleGoBack}
-          >
-            Back
-          </Button>
+          <GoBackButton />
         </header>
         {/* body */}
         <div className={styles.resultContainer}>

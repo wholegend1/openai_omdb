@@ -22,12 +22,12 @@ export async function getMovieDetail(imdbID, key) {
   }
 }
 
-export async function getMoviePoster(imdbID, key) {
+export async function getMovieRecommend(imdbID, key) {
   const url = `https://www.omdbapi.com/?i=${imdbID}&apikey=${key}`;
   const response = await fetch(url);
   const data = await response.json();
   if (data.Response === "True") {
-    return data.Poster;
+    return [data.Poster, data.Title];
   } else {
     return [];
   }

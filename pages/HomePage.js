@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { Layout,Input,Image } from "antd";
+import { Layout,Input,Image, Button } from "antd";
 import { VideoCameraTwoTone } from "@ant-design/icons";
 import styles from "../styles/Movie.module.css";
 const { Header, Footer, Content } = Layout;
 import _ from "lodash"; 
 import MovieItem from "../components/MovieItem";
 import RecommendInfo from "../components/MovieRecommendInfo";
-import { recommendData } from "../recommendData";
-
+import { recommendData } from "../datas/recommendData";
+import { useLanguage } from "../context/LanguageContext";
+import { normalTranslateText } from "../utils/translateText";
+import LanguageButton from "../components/button/LanguageButton";
 const headerStyle = {
   textAlign: "center",
   color: "#fff",
@@ -15,6 +17,10 @@ const headerStyle = {
   paddingInline: 50,
   lineHeight: "64px",
   backgroundColor: "black",
+  width: "100%",
+  display: "flex",
+  textAlign: "center",
+  justifyContent: "center",
 };
 
 const contentStyle = {
@@ -31,13 +37,14 @@ const footerStyle = {
   bottom: 0,
   left: 0,
   right: 0,
+  fontFamily:"Gill Sans, Gill Sans MT, Calibri, Trebuchet MS, sans-serif",
 };
 
 const HomePage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchListVisible, setSearchListVisible] = useState(false);
   const [moviesInfo, setMoviesInfo] = useState([]);
-
+  const { language, setLanguage } = useLanguage();
   const throttledFindMovies = _.throttle((value) => {
     findMovies(value)
       .then((result) => {
@@ -49,27 +56,29 @@ const HomePage = () => {
         setMoviesInfo([]);
       });
   }, 3000, { trailing: false });
-
   return (
     <div className={styles.wrapper}>
       <Header style={headerStyle}>
         <div className={styles.logo}>
           <div className={styles.container}>
-            <h1>
-              <span>open</span>MovieReview
-            </h1>
+            <h1>{normalTranslateText(language, "openMovieReview")}</h1>
           </div>
+        </div>
+        <div className={styles.languageButton}>
+          <LanguageButton
+            key={language}
+          />
         </div>
       </Header>
       <Content style={contentStyle}>
         {/* Start search-container */}
         <div className={styles.searchContainer}>
           <div className={styles.searchElement}>
-            <h3>Search Movie:</h3>
+            <h3>{normalTranslateText(language, "searchMovie")}</h3>
             <Input
               type="text"
               size="large"
-              placeholder="在此輸入你想查詢的電影"
+              placeholder={normalTranslateText(language, "searchPlaceholder")}
               className={styles.formControl}
               id="movie-search-box"
               prefix={<VideoCameraTwoTone />}
@@ -89,18 +98,21 @@ const HomePage = () => {
             </div>
           </div>
           <div className={styles.recommendElement}>
+            <h2>{normalTranslateText(language, "recommended")}</h2>
             <RecommendInfo recommendData={recommendData} />
           </div>
         </div>
       </Content>
-      <Footer style={footerStyle}>wildoinglab</Footer>
+      <Footer style={footerStyle}>
+        {normalTranslateText(language, "copyRight")}
+      </Footer>
     </div>
   );
 };
 
 const MoviesInfo = ({ moviesInfo }) => {
   return moviesInfo.map((movie) => (
-    <MovieItem key={movie.imdbID} movie={movie}  />
+    <MovieItem key={movie.imdbID} movie={movie}/>
   ));
 };
 

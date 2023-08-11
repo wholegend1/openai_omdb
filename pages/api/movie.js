@@ -1,6 +1,10 @@
 
 const API_KEY = process.env.OMDB_API_KEY;
-import {getMovieDetail,getMovieInfo,getMoviePoster} from '../../utils/getMovies';
+import {
+  getMovieDetail,
+  getMovieInfo,
+  getMovieRecommend,
+} from "../../utils/getMovies";
 
 export default async function handler(req, res) {
   if (req.method === "GET") {
@@ -13,8 +17,8 @@ export default async function handler(req, res) {
       const movieDetail = await getMovieDetail(imdbID, API_KEY);
       res.status(200).json(movieDetail);
     } else if (imdbID && type === "poster") {
-      const moviePoster = await getMoviePoster(imdbID, API_KEY);
-      res.status(200).json(moviePoster);
+      const MovieRecommendInfo = await getMovieRecommend(imdbID, API_KEY);
+      res.status(200).json(MovieRecommendInfo);
     } else {
       res.status(400).json({ error: "Invalid request" });
     }

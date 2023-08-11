@@ -8,7 +8,22 @@
     gap:10px;
     justify-content: space-around;
 }
-
+.recommendItem {
+    display: flex;
+    flex-direction: column;
+}
+.recommendItem .title{
+    margin: 0 auto;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+.recommendContainer a {
+    color: inherit;
+    text-decoration: none;
+}
+.recommendContainer a:hover {
+    color: inherit;
+}
 .recommendItem img {
     max-height:400px
 }
+

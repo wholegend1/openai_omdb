@@ -8,6 +8,8 @@ import GoBackButton from "./button/GoBackButton";
 import LanguageButton from "./button/LanguageButton";
 import { getStoredItem, setStoredItem } from "../utils/localStorageUtils";
 import { normalTranslateText } from "../utils/translateText";
+import { translateData } from "../utils/translateData";
+import { checkStoredReview } from "../utils/checkStoredReview";
 
 const MovieDetail = ({ language, movieDetail }) => {
   const [reviewData, setReviewData] = useState({
@@ -17,27 +19,32 @@ const MovieDetail = ({ language, movieDetail }) => {
     isGenerated: false,
     isLoading: false,
   });
+  const [isFetching, setIsFetching] = useState(false);
   useEffect(() => {
-    const storedMovieReview = getStoredItem(
-      `${language}_movieReview_${movieDetail.imdbID}`
-    );
-    console.log("Ready setReview");
-    if (storedMovieReview) {
-      setReviewData({
-        Title: storedMovieReview.Title,
-        Introduction: storedMovieReview.Introduction,
-        Review: storedMovieReview.Review,
-        isGenerated: true,
-        isLoading: false,
-      });
-    } else {
-      setReviewData({
-        ...reviewData,
-        isGenerated: false,
-        isLoading: false,
-      });
-      setShowGeneratedReview(false);
+    async function fetchAndCheckReview() {
+      if (isFetching) {
+        return; 
+      }
+
+      setIsFetching(true); 
+
+      try {
+        const reviewData = await checkStoredReview(
+          language,
+          movieDetail,
+          getStoredItem,
+          translateData
+        );
+        setReviewData(reviewData);
+        setShowGeneratedReview(reviewData.isGenerated);
+      } catch (error) {
+        // 错误处理
+      } finally {
+        setIsFetching(false); // 请求完成后重置为非请求状态
+      }
     }
+
+    fetchAndCheckReview();
   }, [language, movieDetail.imdbID]);
   const [showGeneratedReview, setShowGeneratedReview] = useState(false);
   if (movieDetail.Poster === "N/A") {
@@ -200,30 +207,31 @@ const generateAndStoreReview = async (id, language) => {
       Introduction: response.Introduction,
       Review: response.Review,
     });
-
     const en_Review = getStoredItem(`en_movieReview_${id}`);
-    const translateResponse = await axios
-      .post(`/api/openaiReviewTranslate`, {
-        movieReview: en_Review,
-      })
-      .then((res) => res.data);
+    const tc_translatedData = {
+      Title: await translateData("Title", en_Review.Title),
+      Introduction: await translateData("Introduction", en_Review.Introduction),
+      Review: await translateData("Review", en_Review.Review),
+    };
 
-    setStoredItem(`tc_movieReview_${id}`, {
-      Title: translateResponse.Title,
-      Introduction: translateResponse.Introduction,
-      Review: translateResponse.Review,
-    });
-
+    setStoredItem(`tc_movieReview_${id}`, tc_translatedData);
     if (language === "tc") {
-      response.Title = translateResponse.Title;
-      response.Introduction = translateResponse.Introduction;
-      response.Review = translateResponse.Review;
+      response.Title = tc_translatedData.Title;
+      response.Introduction = tc_translatedData.Introduction;
+      response.Review = tc_translatedData.Review;
     }
 
     return response;
   } catch (error) {
-    console.error("Failed to generate review:", error);
-    alert("請稍後在試");
+    console.error("Error", error);
+    if (error.message.includes("generateReview")) {
+      alert("生成評論出現錯誤，請稍後在試");
+    } else if (error.message.includes("translateData")) {
+      alert("翻譯數據出錯中文暫無翻譯按下切換語言鍵即可重新翻譯，請稍後在試");
+      alert("提示:不要快速切換");
+    } else {
+      alert("發生未知錯誤，請稍後在試");
+    }
     throw error;
   }
 };

@@ -15,6 +15,7 @@ const RecommendInfo = ({ recommendData }) => {
       })
       .catch((error) => {
         console.error("Error fetching movie detail:", error);
+        window.location.reload();
       });
   }, [language]);
   return (
@@ -86,7 +87,7 @@ const fetchData = async (language, recommendData) => {
 
     return movieData;
   } catch (error) {
-    console.error("Error fetching and parsing JSON:", error);
+    console.error("Error", error);
     return []; // Return an empty array in case of error
   }
 };

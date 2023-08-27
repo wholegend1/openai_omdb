@@ -1,43 +1,57 @@
 const { Configuration, OpenAIApi } = require("openai");
+
 export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
+
   if (req.method === "POST") {
-    const maxTokens = 256;
-    const { Title, Introduction, Review } = req.body.movieReview || "";
-    const prompt = `{
-      "title": "${Title}",
-      "introduction": "${Introduction}",
-      "review": "${Review}"
-    }`;
-    const messages = [
-      {
-        role: "system",
-        content: "You are an expert translation",
-      },
-      {
-        role: "user",
-        content: `Translate the following movie review from English to Traditional Chinese. Keep the JSON structure and keys in English, only translate the values, without any output:\n
-              {"title":"",introduction:"",review:""}`,
-      },
-      {
-        role: "user",
-        content: prompt,
-      },
-    ];
-    if (!process.env.OPENAI_API_KEY) {
+    const maxTokens = 100;
+    const apiKey = process.env.OPENAI_API_KEY;
+
+    if (!apiKey) {
       return res.status(500).json({ error: "Missing OPENAI_API_KEY" });
     }
-    const configuration = new Configuration({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+
+    const configuration = new Configuration({ apiKey });
     const openai = new OpenAIApi(configuration);
-    if (prompt.trim().length === 0) {
-      res.status(400).json({
-        error: "Please enter a valid prompt",
-      });
-      return;
-    }
+
     try {
+      // 根據傳入的輸入類型，動態設定 prompt 和 messages
+      const translateInput = req.body.inputType; // 假設這是傳入的輸入類型
+
+      let prompt = "";
+      let userMessage = "";
+
+      if (translateInput === "Title") {
+        prompt = req.body.Title || "";
+        userMessage =
+          "I will give you Title and you have to translate it and throw it back to me";
+      } else if (translateInput === "Introduction") {
+        prompt = req.body.Introduction || "";
+        userMessage =
+          "I will give you Introduction and you have to translate it and throw it back to me";
+      } else if (translateInput === "Review") {
+        prompt = req.body.Review || "";
+        userMessage =
+          "I will give you Review and you have to translate it and throw it back to me";
+      }
+      console.log("prompt", prompt, userMessage);
+      const messages = [
+        {
+          role: "system",
+          content:
+            "You will get the input, and your task is to translate the English part into Traditional Chinese.",
+        },
+        {
+          role: "user",
+          content: userMessage,
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ];
+
+      // 進行 API 請求
       let response = await openai.createChatCompletion({
         model: "gpt-3.5-turbo",
         messages: messages,
@@ -50,12 +64,10 @@ export default async function handler(req, res) {
       let translateResponse = response.data.choices[0]?.message?.content;
       let temp = 0;
       while (
-        !translateResponse.includes("}") &&
         response.data.choices[0].finish_reason !== "stop" &&
         temp <= 5
       ) {
         const assistantResponse = translateResponse;
-        console.log("assistantResponse", assistantResponse);
         response = await openai.createChatCompletion({
           model: "gpt-3.5-turbo",
           messages: [
@@ -81,24 +93,9 @@ export default async function handler(req, res) {
         temp += 1;
         translateResponse += response.data.choices[0]?.message?.content;
       }
-      console.log(
-        "translateResponse",
-        translateResponse,
-        response.data.choices[0].finish_reason 
-      );
-      if (
-        response.data.choices[0].finish_reason === "stop" &&
-        !translateResponse.includes("}")
-      ) {
-        translateResponse += "}";
-      }
-      const { title, introduction, review } = JSON.parse(translateResponse);
-      console.log("translateResponse", title, introduction, review);
-      res.status(200).json({
-        Title: title,
-        Introduction: introduction,
-        Review: review,
-      });
+      
+
+      res.status(200).json({ translateResponse });
     } catch (error) {
       console.error("Failed to Translate:", error);
       res.status(500).json({ error: "Failed to Translate" });
@@ -107,7 +104,3 @@ export default async function handler(req, res) {
     res.status(405).json({ error: "Method not allowed" });
   }
 }
-
-
-// 只差錯誤處理
-

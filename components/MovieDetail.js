@@ -195,7 +195,7 @@ const generateAndStoreReview = async (id, language) => {
       })
       .then((res) => res.data);
 
-    setStoredItem(`${language}_movieReview_${id}`, {
+    setStoredItem(`en_movieReview_${id}`, {
       Title: response.Title,
       Introduction: response.Introduction,
       Review: response.Review,

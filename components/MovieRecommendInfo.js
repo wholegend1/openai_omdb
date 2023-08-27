@@ -4,18 +4,19 @@ import styles from "../styles/MovieRecommendInfo.module.css";
 import Link from "next/link";
 import { getStoredItem, setStoredItem } from "../utils/localStorageUtils";
 import { useLanguage } from "../context/LanguageContext";
+import axios from "axios";
 const RecommendInfo = ({ recommendData }) => {
   const [recommend, setRecommend] = useState([]);
   const { language, setLanguage } = useLanguage();
   useEffect(() => {
-    fetchData(language,recommendData)
+    fetchData(language, recommendData)
       .then((res) => {
         setRecommend(res);
       })
       .catch((error) => {
         console.error("Error fetching movie detail:", error);
       });
-  }, [recommendData]);
+  }, [language]);
   return (
     <>
       <div className={styles.recommendContainer}>
@@ -39,10 +40,12 @@ const RecommendInfo = ({ recommendData }) => {
 
 const fetchData = async (language, recommendData) => {
   try {
+    console.log("movielanguage", language);
     const movieData = await Promise.all(
       recommendData.map(async (movie) => {
         let id = movie.omdbid;
         const storedMovieRecommend = getStoredItem(`${language}_movie_${id}`);
+        console.log("storedMovieRecommend", storedMovieRecommend);
         if (storedMovieRecommend) {
           return {
             imdbID: id,
@@ -60,8 +63,22 @@ const fetchData = async (language, recommendData) => {
 
           let dataJson = await posterResponse.json();
           let res = { imdbID: id, Poster: dataJson[0], Title: dataJson[1] };
-          console.log(dataJson);
-          setStoredItem(`${language}_movie_${id}`, res);
+          setStoredItem(`en_movie_${id}`, res);
+          if (language === "tc") {
+            let translateResponse = await axios.post(
+              `/api/openaiTitleTranslate`,
+              {
+                title: res.Title,
+              }
+            );
+            console.log("tc", translateResponse);
+            res = {
+              imdbID: id,
+              Poster: dataJson[0],
+              Title: translateResponse.data.translateResponse,
+            };
+            setStoredItem(`${language}_movie_${id}`, res);
+          }
           return res;
         }
       })

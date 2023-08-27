@@ -1,26 +1,50 @@
 // MovieDetail.js
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Image, Button, Spin } from "antd";
 import { TrophyOutlined, SwapOutlined } from "@ant-design/icons";
 import styles from "../styles/MovieDetail.module.css";
 import axios from "axios";
 import GoBackButton from "./button/GoBackButton";
+import LanguageButton from "./button/LanguageButton";
+import { getStoredItem, setStoredItem } from "../utils/localStorageUtils";
+import { normalTranslateText } from "../utils/translateText";
 
-
-
-const MovieDetail = ({ movieDetail, handleGoBack }) => {
+const MovieDetail = ({ language, movieDetail }) => {
   const [reviewData, setReviewData] = useState({
-    Title:"",
-    Introduction:"",
-    Review:"",
+    Title: "",
+    Introduction: "",
+    Review: "",
     isGenerated: false,
     isLoading: false,
   });
+  useEffect(() => {
+    const storedMovieReview = getStoredItem(
+      `${language}_movieReview_${movieDetail.imdbID}`
+    );
+    console.log("Ready setReview");
+    if (storedMovieReview) {
+      setReviewData({
+        Title: storedMovieReview.Title,
+        Introduction: storedMovieReview.Introduction,
+        Review: storedMovieReview.Review,
+        isGenerated: true,
+        isLoading: false,
+      });
+    } else {
+      setReviewData({
+        ...reviewData,
+        isGenerated: false,
+        isLoading: false,
+      });
+      setShowGeneratedReview(false);
+    }
+  }, [language, movieDetail.imdbID]);
   const [showGeneratedReview, setShowGeneratedReview] = useState(false);
   if (movieDetail.Poster === "N/A") {
     movieDetail.Poster = "/image-not-found-icon.svg";
   }
   const {
+    imdbID,
     Poster,
     Title,
     Year,
@@ -37,7 +61,12 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
   const handleGenerateReview = async () => {
     setReviewData({ ...reviewData, isLoading: true });
     try {
-      const result = await generateReview(movieDetail);
+      const result = await generateReview(
+        language,
+        movieDetail,
+        reviewData.isGenerated
+      );
+      console.log("result", result);
       setReviewData({
         Title: result.Title,
         Introduction: result.Introduction,
@@ -47,19 +76,23 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
       });
       setShowGeneratedReview(true);
     } catch (error) {
+      console.error("handleGenerateReview", error);
       console.log("請稍後在試");
       setReviewData({ ...reviewData, isLoading: false });
     }
   };
   const handleChange = (show) => {
     setShowGeneratedReview(!show);
-  }
+  };
   return (
     <>
       <div className={styles.resultWrapper}>
         {/* header */}
         <header className={styles.resultHeader}>
-          <GoBackButton />
+          <div className={styles.buttonGroup}>
+            <GoBackButton />
+            <LanguageButton />
+          </div>
         </header>
         {/* body */}
         <div className={styles.resultContainer}>
@@ -86,10 +119,15 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
                   <div className={styles.movieReview}>
                     <h3 className={styles.movieTitle}>{reviewData.Title}</h3>
                     <div className={styles.reviewIntroduction}>
-                      <h3>Introduction：</h3> {reviewData.Introduction}
+                      <h3>
+                        {normalTranslateText(language, "review.introduction")}：
+                      </h3>
+                      {reviewData.Introduction}
                     </div>
                     <div className={styles.reviewContent}>
-                      <h3>Review：</h3>
+                      <h3>
+                        {normalTranslateText(language, "review.review")}：
+                      </h3>
                       {reviewData.Review}
                     </div>
                   </div>
@@ -139,8 +177,8 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
           ) : (
             <Button onClick={() => handleGenerateReview()}>
               {reviewData.isGenerated
-                ? "Generate Another Review"
-                : "Generate Review"}
+                ? normalTranslateText(language, "anotherGenerateReview")
+                : normalTranslateText(language, "generateReview")}
             </Button>
           )}
         </footer>
@@ -148,18 +186,67 @@ const MovieDetail = ({ movieDetail, handleGoBack }) => {
     </>
   );
 };
-
-const generateReview = async (movieDetail) => {
+const generateAndStoreReview = async (id, language) => {
   try {
-    const response = await axios.post("/api/generateReview", {
-      movieDetail: movieDetail,
+    const en_movieDetail = getStoredItem(`en_movie_${id}`);
+    const response = await axios
+      .post("/api/generateReview", {
+        movieDetail: en_movieDetail,
+      })
+      .then((res) => res.data);
+
+    setStoredItem(`${language}_movieReview_${id}`, {
+      Title: response.Title,
+      Introduction: response.Introduction,
+      Review: response.Review,
     });
-    console.log(response);
-    const { title, introduction, review } = response.data;
-    return { Title: title, Introduction: introduction, Review: review };
+
+    const en_Review = getStoredItem(`en_movieReview_${id}`);
+    const translateResponse = await axios
+      .post(`/api/openaiReviewTranslate`, {
+        movieReview: en_Review,
+      })
+      .then((res) => res.data);
+
+    setStoredItem(`tc_movieReview_${id}`, {
+      Title: translateResponse.Title,
+      Introduction: translateResponse.Introduction,
+      Review: translateResponse.Review,
+    });
+
+    if (language === "tc") {
+      response.Title = translateResponse.Title;
+      response.Introduction = translateResponse.Introduction;
+      response.Review = translateResponse.Review;
+    }
+
+    return response;
   } catch (error) {
     console.error("Failed to generate review:", error);
-    throw error; // 将错误重新抛出，以便在调用方处理
+    alert("請稍後在試");
+    throw error;
+  }
+};
+const generateReview = async (language, movieDetail, forceGenerated) => {
+  let id = movieDetail.imdbID;
+  console.log("forceGenerated", forceGenerated);
+
+  if (forceGenerated) {
+    const response = await generateAndStoreReview(id, language);
+
+    return response;
+  } else {
+    const storedMovieReview = getStoredItem(`${language}_movieReview_${id}`);
+    if (storedMovieReview) {
+      return {
+        Title: storedMovieReview.Title,
+        Introduction: storedMovieReview.Introduction,
+        Review: storedMovieReview.Review,
+      };
+    } else {
+      const response = await generateAndStoreReview(id, language);
+      return response;
+    }
   }
 };
 export default MovieDetail;

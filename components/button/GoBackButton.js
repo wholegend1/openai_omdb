@@ -1,12 +1,16 @@
-import React,{useState} from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "antd";
 import { useRouter } from "next/router";
+import { normalTranslateText } from "../../utils/translateText";
+import { useLanguage } from "../../context/LanguageContext";
 const GoBackButton = () => {
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
+  const {language,setLanguage} = useLanguage();
   const handleGoBack = () => {
     router.back();
   };
+  useEffect(() => {}, [language]);
   const buttonStyle = {
     backgroundColor: isHovered ? "#ff4500" : "var(--yellow-color)",
     color: "white",
@@ -26,7 +30,7 @@ const GoBackButton = () => {
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleGoBack}
     >
-      Back
+      {normalTranslateText(language, "back")}
     </Button>
   );
 };

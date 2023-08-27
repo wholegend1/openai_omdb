@@ -2,10 +2,27 @@
     min-height: 100vh;
     background-color: black;
 }
+.resultWrapper .buttonGroup {
+    display: flex;
+    justify-content: space-between;
+    padding: 0px 50px;
+}
+.resultWrapper .loadingGroup {
+    padding: 50px;
+    color: white;
+    height: 100%;
+    gap: 10px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    flex-direction: column;
+}
 
 /* resultHeader */
 .resultHeader {
-    padding: 10px;
+    padding: 20px 50px 0px 50px;
 }
 .resultHeader .customButton {
     background-color: var(--yellow-color);
@@ -44,7 +61,7 @@
 /* resultContainer */
 .resultGrid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 2fr 3fr;
     align-items: start;
 }
 

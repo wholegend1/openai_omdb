@@ -12,6 +12,7 @@
 .logo {
   border-bottom: 1px solid var(--light-dark-color);
   overflow: hidden;
+  width: 100%;
 }
 .logo h1 {
   font-size: 2rem;
@@ -133,6 +134,7 @@
   display: none;
 }
 
+<<<<<<< HEAD
 /* resultContainer */
 .resultContainer {
   padding: 5rem 0 3rem 0;
@@ -216,6 +218,8 @@
   color: var(--yellow-color);
   margin: 1rem 0.7rem 0 0;
 }
+=======
+>>>>>>> a0728111a14eb86d775b89907aed2f610eb3dfb0
 
 @media (max-width: 450px) {
   .logo h1 {
@@ -251,6 +255,13 @@
   }
 }
 
+.recommendElement {
+  color: white;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 @media (min-width: 800px) {
   .searchElement {
     -webkit-box-orient: horizontal;
@@ -260,10 +271,6 @@
   }
   .searchElement h3 {
     margin-bottom: 0;
-  }
-  .resultGrid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
   }
   .movieInfo {
     text-align: left;

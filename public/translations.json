@@ -1,0 +1,34 @@
+{
+  "en": {
+    "openMovieReview": "openAIMovieReview",
+    "searchMovie": "Search Movie:",
+    "searchPlaceholder":"Input the movie you want to query here",
+    "back":"Back",
+    "loading":"Loading...",
+    "recommended":"Recommended movie list:",
+    "copyRight":"Copyright © 2023 wilbur. All rights reserved.",
+    "generateReview":"Generate Review",
+    "anotherGenerateReview":"Generate Another Review",
+    "review": {
+          "introduction":"Introduction",
+          "review":"Review"
+    },
+    "movieDetails": {}
+  },
+  "tc": {
+    "openMovieReview": "openAI電影評論",
+    "searchMovie": "搜尋電影：",
+    "searchPlaceholder":"在此輸入你想查詢的電影",
+    "back":"返回",
+    "loading":"加載中請稍後...",
+    "recommended":"推薦的電影清單：",
+    "copyRight":"版權所有© 2023 wilbur",
+    "generateReview":"AI產生評論",
+    "anotherGenerateReview":"產生新評論",
+    "review": {
+      "introduction":"簡介",
+      "review":"評論"
+    },
+    "movieDetails": {}
+  }
+}

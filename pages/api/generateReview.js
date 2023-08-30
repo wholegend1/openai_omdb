@@ -65,7 +65,6 @@ export default async function handler(req, res) {
         frequency_penalty: 0,
         presence_penalty: 0,
       });
-      console.log("是啥小",response.data.choices[0], response.data.usage);
       let generatedReview = response.data.choices[0]?.message?.content;
       while (
         response.data.choices[0].finish_reason !== "stop" &&

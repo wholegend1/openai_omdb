@@ -38,9 +38,8 @@ const MovieDetail = ({ language, movieDetail }) => {
         setReviewData(reviewData);
         setShowGeneratedReview(reviewData.isGenerated);
       } catch (error) {
-        // 错误处理
       } finally {
-        setIsFetching(false); // 请求完成后重置为非请求状态
+        setIsFetching(false);
       }
     }
 
